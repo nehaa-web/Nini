@@ -103,6 +103,28 @@ res.status(200).json({
 
 }
 
+export async function getMe( req , res){
+
+  const userId = req.user._id
+
+  const user = await userModel.findById(userId).select("-password");
+
+
+  if(!user){
+    return res.status(404).json({
+      message: "User not found",
+      success: false,
+      err: "User not found"
+    })
+  }
+
+  res.status(200).json({
+    message: "User fetched succesfully",
+    success: true,
+    user,
+  });
+}
+
 export async function verifyEmail ( req ,res ){
 
   const { token } = req.query 
