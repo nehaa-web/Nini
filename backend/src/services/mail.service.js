@@ -17,7 +17,7 @@ transporter
     console.log("Email transporter is ready to send emails");
   })
   .catch((err) => {
-    console.log("Email transporter verfication failed");
+    console.log("Email transporter verification failed");
   });
 
 export async function sendEmail({ to, subject, html, text }) {

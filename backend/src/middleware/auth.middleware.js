@@ -1,5 +1,4 @@
-const userModel = require("../models/user.model");
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken"
 
 export async function authUser(req, res, next) {
   const token = req.cookies.token;

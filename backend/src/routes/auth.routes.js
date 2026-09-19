@@ -10,7 +10,7 @@ import {
   getMe,
 } from "../controllers/auth.controller.js";
 import { authUser } from "../middleware/auth.middleware.js";
-import { authUser } from "../middleware/auth.middleware.js";
+
 
 const authRouter = Router();
 

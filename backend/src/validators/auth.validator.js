@@ -18,13 +18,13 @@ export const registerValidator = [
 
     .isLength({ min: 3, max: 30 }).withMessage("Username must be between 3 and 30 characters")
 
-    .matches(/^[a-zZ-Z0-9_]+$/).withMessage("Uername can only contail "),
+    .matches(/^[a-zZ-Z0-9_]+$/).withMessage("Username can only contain letters, numbers, and underscores "),
 
 // Email
     body("email")
     .trim()
     .notEmpty().withMessage("Email is required")
-    .isEmail().withMessage("Please provide a valid eamil"),
+    .isEmail().withMessage("Please provide a valid email"),
 
     // Password
     body("password")
@@ -41,7 +41,7 @@ export const loginValidator = [
     body("email")
     .trim()
     .notEmpty().withMessage("Email is required")
-    .isEmail().withMessage("Please provide a valid eamil"),
+    .isEmail().withMessage("Please provide a valid email"),
 
     // Password
     body("password")
