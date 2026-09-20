@@ -21,6 +21,7 @@ transporter
   });
 
 export async function sendEmail({ to, subject, html, text }) {
+  try { 
   const mailOptions = {
     from: process.env.GOOGLE_USER,
     to,
@@ -31,4 +32,9 @@ export async function sendEmail({ to, subject, html, text }) {
 
   const details = await transporter.sendMail(mailOptions);
   console.log("Email sent:", details);
+
+     console.log("Email sent:", details.messageId);
+  } catch (error) {
+    console.log("Email sending failed:", error);
+  }
 }
