@@ -1,21 +1,28 @@
-
+import { useAuth } from '../hook/useAuth';
+import { useNavigate } from 'react-router-dom';
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 const Register = () => {
-  const [formData, setFormData] = useState({ username: '', email: '', password: '' })
-  const [submitted, setSubmitted] = useState(false)
 
-  const handleChange = (event) => {
-    const { name, value } = event.target
-    setFormData((currentData) => ({ ...currentData, [name]: value }))
-    setSubmitted(false)
-  }
+   const { handleRegister } = useAuth();
 
-  const handleSubmit = (event) => {
-    event.preventDefault()
-    setSubmitted(true)
-    console.log('Registration submitted:', formData)
+    const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    const payload = {
+      email,
+      username,
+      password
+    }
+    await handleRegister(payload);
+    navigate("/");
   }
 
   return (
@@ -29,20 +36,39 @@ const Register = () => {
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
             <label className="mb-2 block text-sm font-medium text-zinc-200" htmlFor="register-username">Username</label>
-            <input className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-[rgba(20,107,116,0.5)] focus:ring-2 focus:ring-[rgba(20,107,116,0.5)]" id="register-username" name="username" onChange={handleChange} placeholder="Choose a username" required type="text" value={formData.username} />
+            <input className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-[rgba(20,107,116,0.5)] focus:ring-2 focus:ring-[rgba(20,107,116,0.5)]"
+             id="register-username" 
+             name="username" 
+             onChange={(e) => setUsername(e.target.value)}
+              placeholder="Choose a username" 
+              required 
+              type="text" 
+              value={username} />
           </div>
           <div>
             <label className="mb-2 block text-sm font-medium text-zinc-200" htmlFor="register-email">Email address</label>
-            <input className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-[rgba(20,107,116,0.5)] focus:ring-2 focus:ring-[rgba(20,107,116,0.5)]" id="register-email" name="email" onChange={handleChange} placeholder="you@example.com" required type="email" value={formData.email} />
+            <input className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-[rgba(20,107,116,0.5)] focus:ring-2 focus:ring-[rgba(20,107,116,0.5)]" 
+            id="register-email" 
+            name="email" 
+            onChange={(e) => setEmail(e.target.value)}
+             placeholder="you@example.com" 
+             required
+              type="email"
+               value={email} />
           </div>
           <div>
             <label className="mb-2 block text-sm font-medium text-zinc-200" htmlFor="register-password">Password</label>
-            <input className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-[rgba(20,107,116,0.5)] focus:ring-2 focus:ring-[rgba(20,107,116,0.5)]" id="register-password" name="password" onChange={handleChange} placeholder="Create a password" required type="password" value={formData.password} />
+            <input className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-[rgba(20,107,116,0.5)] focus:ring-2 focus:ring-[rgba(20,107,116,0.5)]" 
+            id="register-password" name="password"
+             onChange={(e) => setPassword(e.target.value)} 
+            placeholder="Create a password" 
+            required
+             type="password" 
+             value={password} />
           </div>
           <button className="w-full rounded-xl bg-[rgba(20,107,116,0.5)] px-4 py-3.5 font-semibold shadow-lg shadow-[rgba(20,107,116,0.5)] transition hover:bg-[rgba(20,107,116,0.7)] focus:outline-none focus:ring-2 focus:ring-[rgba(20,107,116,0.5)] focus:ring-offset-2 focus:ring-offset-[#1a1012]" type="submit">Create account</button>
         </form>
 
-        {submitted && <p className="mt-5 rounded-lg border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-center text-sm text-emerald-300">Registration details submitted successfully.</p>}
         <p className="mt-8 text-center text-sm text-zinc-400">Already have an account? <Link className="font-semibold text-[rgba(20,107,116,0.5)] transition hover:text-[rgba(20,107,116,0.7)]" to="/login">Sign in</Link></p>
       </section>
     </main>
