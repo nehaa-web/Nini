@@ -153,7 +153,7 @@ try{
   const html = `
     <h1>Email Verified Successfully</h1>
     <p>Your email has been verified. You can now log in to your account.</p>
-    <a href="http://localhost:3000/login">Go To Login</a>
+    <a href="http://localhost:5173/login">Go To Login</a>
     `
  return res.send(html)
 

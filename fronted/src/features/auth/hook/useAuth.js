@@ -33,12 +33,17 @@ export function useAuth() {
         }
     }
 
-    async function handlegetMe() {
+    async function handleGetMe() {
 
         try{
             dispatch(setLoading(true));
             const data = await getMe()
             dispatch(setUser(data.user));
+            console.log("GET ME RESPONSE:", data);
+
+      if (data.success) {
+        dispatch(setUser(data.user));
+      }
         }catch(error){
             dispatch(setError(error.response?.data?.message || 'GetMe failed'));
         }finally {
@@ -46,5 +51,5 @@ export function useAuth() {
         }   
     }
 
-    return { handleRegister, handleLogin, handlegetMe };
+    return { handleRegister, handleLogin, handleGetMe };
 }
