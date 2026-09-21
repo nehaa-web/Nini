@@ -20,36 +20,35 @@ export function useAuth() {
 
     }
 
-    async function handleLogin({ email , password}) {
+  async function handleLogin({ email, password }) {
+  try {
+    dispatch(setLoading(true));
 
-        try{
-            dispatch(setLoading(true));
-            const data = await login({ email , password})
-            dispatch(setUser(data.user));
-        }catch(error){
-            dispatch(setError(error.response?.data?.message || 'Login failed'));
-        } finally {
-            dispatch(setLoading(false));
-        }
-    }
+    const data = await login({ email, password });
 
-    async function handleGetMe() {
+    dispatch(setUser(data.user));
 
-        try{
-            dispatch(setLoading(true));
-            const data = await getMe()
-            dispatch(setUser(data.user));
-            console.log("GET ME RESPONSE:", data);
+    return true;
+  } catch (error) {
+    dispatch(setError(error.response?.data?.message || "Login failed"));
+    return false;
+  } finally {
+    dispatch(setLoading(false));
+  }
+}
+ async function handleGetMe() {
+  try {
+    dispatch(setLoading(true));
 
-      if (data.success) {
-        dispatch(setUser(data.user));
-      }
-        }catch(error){
-            dispatch(setError(error.response?.data?.message || 'GetMe failed'));
-        }finally {
-            dispatch(setLoading(false));
-        }   
-    }
+    const data = await getMe()
 
+    dispatch(setUser(data.user));
+  } catch (error) {
+    console.log("GET ME ERROR:", error);
+    dispatch(setUser(null));
+  } finally {
+    dispatch(setLoading(false));
+  }
+}
     return { handleRegister, handleLogin, handleGetMe };
 }

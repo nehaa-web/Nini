@@ -2,26 +2,43 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hook/useAuth";
 import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const Login = () => {
-
-  const { handleLogin } = useAuth();
-
-    const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  const { handleLogin } = useAuth();
+    const navigate = useNavigate();
 
-    const payload = {
-      email,
-      password
-    }
-    await handleLogin(payload);
+const user = useSelector((state) => state.auth.user);
+const loading = useSelector((state) => state.auth.loading);
+
+
+ async function handleSubmit(e) {
+  e.preventDefault();
+
+  const payload = {
+    email,
+    password,
+  };
+
+  const success = await handleLogin(payload);
+
+  if (success) {
     navigate("/");
   }
+}
+
+if (loading) {
+  return <div>Loading...</div>;
+}
+
+if (user) {
+  return <Navigate to="/" replace />;
+}
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#100b0d] px-4 py-12 text-white sm:px-6">
