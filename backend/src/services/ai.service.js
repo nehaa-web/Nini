@@ -6,9 +6,9 @@ const model = new ChatGoogleGenerativeAI({
 });
 
 export async function testApi(req, res) {
-    model.invoke("Hello, how are you?")
-    .then((response) => {
-     console.log(response.text);
-    })       
+    const response = await model.invoke({
+      new HumanMessage(message)
+    })     
+    return response.text
 };
  
