@@ -8,6 +8,6 @@ export async function sendMessage(req, res) {
     const result = await generateResponse(message);
 
     res.json({
-        response: result
+        aiMessage: result
     })
 }
