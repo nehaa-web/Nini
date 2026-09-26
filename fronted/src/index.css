@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
-*{
-    background:#100b0d;
+html,
+body,
+#root {
+    min-height: 100%;
+    margin: 0;
+}
+
+body {
+    background: #090a0c;
+    color-scheme: dark;
+    font-family: ui-sans-serif, system-ui, sans-serif;
 }
