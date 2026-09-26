@@ -5,8 +5,7 @@ import messageModel from "../models/message.model.js";
 export async function sendMessage(req, res) {
   const { message, chat: chatId } = req.body;
 
-  let title = null,
-    chat = null;
+  let title = null, chat = null;
 
 if (!chatId) {
   title = await generateChatTitle(message);
@@ -15,9 +14,10 @@ if (!chatId) {
     userId: req.user.id,
     title,
   });
-} else {
-  chat = await chatModel.findById(chatId);
-}
+} 
+// else {
+//   chat = await chatModel.findById(chatId);
+// }
 
   const userMessage = await messageModel.create({
     chat: chat._id,
@@ -25,12 +25,12 @@ if (!chatId) {
     role: "user",
   });
 
-  const messages = await messageModel.find({ chat: chatId });
+  const messages = await messageModel.find({ chat: chatId || chat._id});
 
   const result = await generateResponse(message);
 
   const aiMessage = await messageModel.create({
-    chat: chat._id,
+    chat: chat || chat._id,
     content: result,
     role: "ai",
   });
