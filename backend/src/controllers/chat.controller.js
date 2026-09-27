@@ -7,17 +7,15 @@ export async function sendMessage(req, res) {
 
   let title = null, chat = null;
 
-if (!chatId) {
-  title = await generateChatTitle(message);
-
-  chat = await chatModel.create({
-    userId: req.user.id,
-    title,
-  });
-} 
-// else {
-//   chat = await chatModel.findById(chatId);
-// }
+  if (!chatId) {
+    title = await generateChatTitle([{ role: "user", content: message }]);
+    chat = await chatModel.create({
+      userId: req.user.id,
+      title,
+    });
+  } else {
+    chat = await chatModel.findById(chatId);
+  }
 
   const userMessage = await messageModel.create({
     chat: chat._id,
@@ -25,20 +23,20 @@ if (!chatId) {
     role: "user",
   });
 
-  const messages = await messageModel.find({ chat: chatId || chat._id});
+  const messages = await messageModel.find({ chat: chat._id });
 
   const result = await generateResponse(message);
 
   const aiMessage = await messageModel.create({
-    chat: chat || chat._id,
+    chat: chat._id,
     content: result,
     role: "ai",
   });
 
   res.status(201).json({
-    aiMessage: result,
     title,
     chat,
+    userMessage,
     aiMessage,
   });
 }
@@ -102,3 +100,4 @@ export async function DeleteChat(req, res) {
     success: true,
   });
 }
+

@@ -1,19 +1,19 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api/chat",
+  baseURL: "http://localhost:3000/api/chat",
   withCredentials: true,
 });
 
 
 export const sendMessage = async ({ chatId, message }) => {
-  const response = await api.post("/messages",{ message, chatId });
+  const response = await api.post("/message", { message, chatId });
   return response.data;
 
 };
 
 export const getChatMessages = async (chatId) => {
-  const response = await api.get(`${chatId}/messages`);
+  const response = await api.get(`/${chatId}/messages`);
   return response.data;
 }
 
@@ -23,6 +23,6 @@ export const getMessages = async () => {
 }
 
 export const DeleteChat = async (chatId)=> {
-const response = await api.delete(`/delete/${chatId}`)
+const response = await api.delete(`/${chatId}`)
 return response.data
 }
