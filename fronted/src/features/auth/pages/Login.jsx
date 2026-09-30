@@ -41,13 +41,13 @@ if (user) {
 }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#100b0d] px-4 py-12 text-white sm:px-6">
-      <section className="w-full max-w-md rounded-3xl border border-[rgba(20,107,116,0.5)] bg-black/35 p-7 shadow-2xl shadow-[rgba(20,107,116,0.5)] backdrop-blur-xl sm:p-10">
+    <main className="flex min-h-screen items-center justify-center bg-[#0C0E0F] px-4 py-12 text-[#FFFFFF] sm:px-6">
+      <section className="w-full max-w-md rounded-3xl border border-[#C4C8D0]/10 bg-[#1A1D21] p-7 shadow-2xl shadow-black/30 backdrop-blur-xl sm:p-10">
         <div className="mb-8">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-[rgba(20,107,116,0.5)]">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-[#21C0D0]">
             Welcome back
           </p>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          <h1 className="text-3xl font-bold tracking-tight text-[#FFFFFF] sm:text-4xl">
             Sign in to continue
           </h1>
         </div>
@@ -55,13 +55,13 @@ if (user) {
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
             <label
-              className="mb-2 block text-sm font-medium text-zinc-200"
+              className="mb-2 block text-sm font-medium text-[#C4C8D0]"
               htmlFor="login-email"
             >
               Email address
             </label>
             <input
-              className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-[rgba(20,107,116,0.5)] focus:ring-2 focus:ring-[rgba(20,107,116,0.5)]"
+              className="w-full rounded-xl border border-[#C4C8D0]/10 bg-[#121417] px-4 py-3 text-[#FFFFFF] outline-none transition placeholder:text-[#8E95A2] focus:border-[#21C0D0] focus:ring-2 focus:ring-[#21C0D0]/60"
               id="login-email"
               name="email"
               onChange={(e) => setEmail(e.target.value)}
@@ -73,13 +73,13 @@ if (user) {
           </div>
           <div>
             <label
-              className="mb-2 block text-sm font-medium text-zinc-200"
+              className="mb-2 block text-sm font-medium text-[#C4C8D0]"
               htmlFor="login-password"
             >
               Password
             </label>
             <input
-              className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-[rgba(20,107,116,0.5)] focus:ring-2 focus:ring-[rgba(20,107,116,0.5)]"
+              className="w-full rounded-xl border border-[#C4C8D0]/10 bg-[#121417] px-4 py-3 text-[#FFFFFF] outline-none transition placeholder:text-[#8E95A2] focus:border-[#21C0D0] focus:ring-2 focus:ring-[#21C0D0]/60"
               id="login-password"
               name="password"
               onChange={(e) => setPassword(e.target.value)}
@@ -90,22 +90,17 @@ if (user) {
             />
           </div>
           <button
-            className="w-full rounded-xl bg-[rgba(20,107,116,0.5)] px-4 py-3.5 font-semibold shadow-lg shadow-[rgba(20,107,116,0.5)] transition hover:bg-[rgba(20,107,116,0.7)] focus:outline-none focus:ring-2 focus:ring-[rgba(20,107,116,0.5)] focus:ring-offset-2 focus:ring-offset-[#1a1012]"
+            className="w-full rounded-xl bg-[#21C0D0] px-4 py-3.5 font-semibold text-[#000000] shadow-lg shadow-[#21C0D0]/20 transition hover:bg-[#4AD6E3] focus:outline-none focus:ring-2 focus:ring-[#21C0D0] focus:ring-offset-2 focus:ring-offset-[#0C0E0F]"
             type="submit"
           >
             Sign in
           </button>
         </form>
 
-        
-          {/* <p className="mt-5 rounded-lg border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-center text-sm text-emerald-300">
-            Login details submitted successfully.
-          </p> */}
-      
-        <p className="mt-8 text-center text-sm text-zinc-400">
+        <p className="mt-8 text-center text-sm text-[#8E95A2]">
           New here?{" "}
           <Link
-            className="font-semibold text-[rgba(20,107,116,0.5)] transition hover:text-[rgba(20,107,116,0.7)]"
+            className="font-semibold text-[#21C0D0] transition hover:text-[#4AD6E3]"
             to="/register"
           >
             Create an account

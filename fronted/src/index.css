@@ -8,7 +8,8 @@ body,
 }
 
 body {
-    background: #090a0c;
+    background: #000000;
+    color: #FFFFFF;
     color-scheme: dark;
     font-family: ui-sans-serif, system-ui, sans-serif;
 }
