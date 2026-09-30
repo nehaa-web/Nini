@@ -1,15 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { LuMenu, LuMessageCircle, LuMic, LuPaperclip, LuPlus, LuSearch, LuSend, LuSettings, LuSparkles, LuX } from 'react-icons/lu'
-import { useSelector } from 'react-redux'
 import { useChat } from '../hooks/useChat.js'
-
-const conversations = [
-  { id: 1, title: 'Ideas for a weekend in Kyoto', date: 'Today' },
-  { id: 2, title: 'A better morning routine', date: 'Yesterday' },
-  { id: 3, title: 'Understanding neural networks', date: 'Yesterday' },
-  { id: 4, title: 'Notes on The Creative Act', date: 'Previous 7 days' },
-  { id: 5, title: 'Easy dinners for busy weeks', date: 'Previous 7 days' },
-]
+import { useDispatch, useSelector } from 'react-redux'
+import { setCurrentChatId } from '../chat.slice.js' 
 
 const icons = {
   spark: LuSparkles,
@@ -36,49 +29,69 @@ const suggestions = [
 ]
 
 const Dashboard = () => {
+
   const chat = useChat()
+  const dispatch = useDispatch()
   const { user } = useSelector((state) => state.auth)
+
   const [search, setSearch] = useState('')
-  const [activeConversation, setActiveConversation] = useState(null)
-  const [messages, setMessages] = useState([])
   const [draft, setDraft] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+
   const inputRef = useRef(null)
+  const bottomRef = useRef(null)
 
-const chats = useSelector((state)=> state.chat.chats)
-const currentChatId = useSelector((state)=> state.chat.currentChatId)
+  
+  
+  const chats = useSelector((state) => state.chat?.chat) ?? {}
+  const currentChatId = useSelector((state) => state.chat?.currentChatId)
+  const currentMessages = chats[currentChatId]?.messages ?? []
 
 
-  useEffect(() => {
-    chat.initializeSocket()
-  }, [])
 
-  const filteredConversations = useMemo(
-    () => conversations.filter((conversation) => conversation.title.toLowerCase().includes(search.toLowerCase())),
-    [search],
-  )
+useEffect(() => {
+  bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+}, [currentMessages.length])
 
-  const startNewChat = () => {
-    setActiveConversation(null)
-    setMessages([])
-    setDraft('')
-    setSidebarOpen(false)
-    inputRef.current?.focus()
-  }
 
-  const openConversation = (conversation) => {
-    setActiveConversation(conversation)
-    setMessages([])
-    setSidebarOpen(false)
-  }
+useEffect(() => {
+  chat.initializeSocket()
+  chat.handleGetChats?.() // apne hook ke function ka naam use karo
+}, [])
 
-  const sendMessage = (event) => {
-    event.preventDefault()
-    const text = draft.trim()
-    if (!text) return
-    setMessages((current) => [...current, { id: Date.now(), text }])
-    setDraft('')
-  }
+const filteredConversations = useMemo(
+  () =>
+    Object.values(chats)
+      .filter((c) => (c.title || 'New chat').toLowerCase().includes(search.toLowerCase()))
+      .reverse(), // latest upar
+  [chats, search],
+)
+
+const startNewChat = () => {
+  dispatch(setCurrentChatId(null))
+  setDraft('')
+  setSidebarOpen(false)
+  inputRef.current?.focus()
+}
+
+const openConversation = (conversation) => {
+  chat.handleOpenChat(conversation._id)
+  setSidebarOpen(false)
+}
+
+
+useEffect(() => {
+  bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+}, [currentMessages.length])
+
+const sendMessage = async (event) => {
+  event.preventDefault()
+  const text = draft.trim()
+  if (!text) return
+  setDraft('')
+  await chat.handleSetMessage({ message: text, chatId: currentChatId })
+}
 
   const displayName = user?.name || user?.username || 'Your account'
   const initials = displayName === 'Your account' ? 'N' : displayName.slice(0, 1).toUpperCase()
@@ -171,22 +184,22 @@ return (
           {filteredConversations.length ? (
             filteredConversations.map((conversation) => (
               <button
-                key={conversation.id}
+                key={conversation._id}
                 onClick={() => openConversation(conversation)}
                 className={`group mb-0.5 flex w-full items-center gap-2.5 rounded-[9px] px-2.5 py-2.5 text-left text-[12.5px] transition ${
-                  activeConversation?.id === conversation.id
-                    ? 'bg-[#1c8f86]/16 text-white' // highlighted style for the active chat
-                    : 'text-white/50 hover:bg-[#1c8f86]/10 hover:text-white/90'
-                }`}
+      currentChatId === conversation._id
+        ? 'bg-[#1c8f86]/16 text-white'
+        : 'text-white/50 hover:bg-[#1c8f86]/10 hover:text-white/90'
+    }`}
               >
                 <Icon
                   name="message"
                   size={15}
                   className={`shrink-0 ${
-                    activeConversation?.id === conversation.id ? 'text-[#5fe8d8]' : 'text-white/35 group-hover:text-[#5fe8d8]/70'
+                   currentChatId === conversation._id ? 'text-[#5fe8d8]' : 'text-white/35 group-hover:text-[#5fe8d8]/70'
                   }`}
                 />
-                <span className="truncate">{conversation.title}</span>
+                <span className="truncate">{conversation.title || 'New chat'}</span>
               </button>
             ))
           ) : (
@@ -231,7 +244,8 @@ return (
             <div className="min-w-0">
               {/* Title: shows conversation title, or "New conversation"/"New chat" if none yet */}
               <h1 className="truncate text-[13px] font-semibold text-white/90">
-                {activeConversation?.title || (messages.length ? 'New conversation' : 'New chat')}
+                {/* {activeConversation?.title || (messages.length ? 'New conversation' : 'New chat')} */}
+               {chats[currentChatId]?.title || (currentMessages.length ? 'New conversation' : 'New chat')}
               </h1>
               {/* Small status indicator: green dot + "Ready to help" text */}
               <div className="mt-0.5 flex items-center gap-1.5">
@@ -243,7 +257,7 @@ return (
           {/* "New chat" button in header — hidden on mobile (sm:flex), visible on larger screens */}
           <button
             onClick={startNewChat}
-            className="hidden items-center gap-2 rounded-[9px] border border-white/[0.07] px-3 py-2 text-[11.5px] text-white/50 transition hover:border-[#1c8f86]/50 hover:text-white/90 sm:flex"
+            className="hidden items-center gap-2 rounded-[9px] border border-white/[0.07] px-3 py-2 text-[11.5px] text-white transition hover:border-[#1c8f86]/50 hover:text-white/90 sm:flex"
           >
             <Icon name="plus" size={14} /> New chat
           </button>
@@ -254,7 +268,7 @@ return (
 
           {/* Scrollable messages container */}
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 sm:px-8">
-            {messages.length === 0 ? (
+            {currentMessages.length === 0 ? (
               // ---- EMPTY STATE: shown when there are no messages yet ----
               <div className="flex flex-1 flex-col items-center justify-center pb-8 pt-10 text-center">
                 {/* Big icon badge */}
@@ -294,17 +308,27 @@ return (
               </div>
             ) : (
               // ---- MESSAGE LIST: shown once there's at least one message ----
-              <div className="mx-auto flex w-full max-w-[720px] flex-1 flex-col gap-4 py-8 sm:py-12">
-                {chats[currentChatId]?.messages.map((message) => (
-                  // NOTE: every message bubble is right-aligned (justify-end) here —
-                  // this only renders the user's own messages; there's no separate
-                  // styling block for AI/assistant replies in this snippet.
-                  <article key={message.id} className="flex justify-end">
-                    <p className="max-w-[78%] rounded-2xl rounded-br-md border border-[#5fe8d8]/18 bg-gradient-to-br from-[#1c8f86]/28 to-[#1c8f86]/14 px-4 py-3 text-[13.5px] leading-6 text-[#eafffb] sm:max-w-[75%]">
-                      {message.text}
-                    </p>
-                  </article>
-                ))}
+                 <div className="mx-auto flex w-full max-w-[720px] flex-1 flex-col gap-4 py-8 sm:py-12">
+                {currentMessages.map((message, index) => {
+                  const isUser = message.role === 'user' || message.role === 'human'
+                  return (
+                    <article
+                      key={message._id || index}
+                      className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <p
+                        className={`max-w-[78%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-[13.5px] leading-6 ${
+                          isUser
+                            ? 'rounded-br-md border border-[#5fe8d8]/18 bg-[#1c8f86]/20 text-[#eafffb]'
+                            : 'rounded-bl-md border border-white/10 bg-white/[0.04] text-white/90'
+                        }`}
+                      >
+                        {message.content}
+                      </p>
+                    </article>
+                  )
+                })}
+                <div ref={bottomRef} />
               </div>
             )}
           </div>
@@ -312,7 +336,7 @@ return (
           {/* --- Message input form (bottom of screen) --- */}
           <div className="shrink-0 px-4 pb-4 pt-2 sm:px-8 sm:pb-6">
             <form onSubmit={sendMessage} className="mx-auto w-full max-w-[720px]">
-              <div className="rounded-[20px] border border-[#1c8f86]/28 bg-[#0b0d0e]/95 p-2 shadow-[0_18px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl transition focus-within:border-[#5fe8d8]/50 focus-within:shadow-[0_0_0_3px_rgba(28,143,134,0.14),0_18px_40px_rgba(0,0,0,0.45)]">
+              <div className="rounded-[20px] border border-[#5fe8d8]/48 bg-[#0b0d0e]/95 p-2 shadow-[0_18px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl transition focus-within:border-[#5fe8d8]/60 focus-within:shadow-[0_0_0_3px_rgba(28,143,134,0.14),0_18px_40px_rgba(0,0,0,0.45)]">
 
                 {/* Auto-resizing-ish textarea for typing the message.
                     Pressing Enter (without Shift) submits the form; Shift+Enter makes a new line. */}

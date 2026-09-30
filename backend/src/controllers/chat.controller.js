@@ -3,101 +3,83 @@ import chatModel from "../models/chat.model.js";
 import messageModel from "../models/message.model.js";
 
 export async function sendMessage(req, res) {
-  const { message, chat: chatId } = req.body;
+  try {
+    const { message, chat: chatId } = req.body;
 
-  let title = null, chat = null;
+    let title = null;
+    let chat = null;
 
-  if (!chatId) {
-    title = await generateChatTitle([{ role: "user", content: message }]);
-    chat = await chatModel.create({
-      userId: req.user.id,
-      title,
+    if (!chatId) {
+      title = await generateChatTitle([{ role: "user", content: message }]);
+      chat = await chatModel.create({ user: req.user.id, title });
+    } else {
+      chat = await chatModel.findOne({ _id: chatId, user: req.user.id });
+    }
+
+    if (!chat) {
+      return res.status(404).json({ success: false, message: "Chat not found" });
+    }
+
+    const userMessage = await messageModel.create({
+      chat: chat._id,
+      content: message,
+      role: "user",
     });
-  } else {
-    chat = await chatModel.findById(chatId);
+
+    const history = await messageModel.find({ chat: chat._id }).sort({ createdAt: 1 });
+    const result = await generateResponse(history);
+
+    const aiMessage = await messageModel.create({
+      chat: chat._id,
+      content: result,
+      role: "ai",
+    });
+
+    return res.status(201).json({ success: true, title, chat, userMessage, aiMessage });
+  } catch (err) {
+    console.error("sendMessage error:", err);
+    return res.status(err.status || 500).json({ success: false, message: err.message });
   }
-
-  const userMessage = await messageModel.create({
-    chat: chat._id,
-    content: message,
-    role: "user",
-  });
-
-  const messages = await messageModel.find({ chat: chat._id });
-
-  const result = await generateResponse(message);
-
-  const aiMessage = await messageModel.create({
-    chat: chat._id,
-    content: result,
-    role: "ai",
-  });
-
-  res.status(201).json({
-    title,
-    chat,
-    userMessage,
-    aiMessage,
-  });
 }
 
 export async function getChatMessages(req, res) {
-   const user = req.user
-   const chats = await chatModel.find({ userId : user.id })
+  const chats = await chatModel.find({ user: req.user.id }).sort({ updatedAt: -1 });
 
-   res.status(200).json({
-    message: "Chat messages retrieved successfully",
+  res.status(200).json({
+    message: "Chats retrieved successfully",
     success: true,
-    chats
-   })
+    chats,
+  });
 }
 
 export async function getMessages(req, res) {
   const { chatId } = req.params;
 
-  const chat = await chatModel.findOne({
-    _id: chatId,
-    userId: req.user.id,
-  });
+  const foundChat = await chatModel.findOne({ _id: chatId, user: req.user.id });
 
-  if(!chat) {
-    return res.status(404).json({
-      message: "Chat not found",
-      success: false,
-      err: "Chat not found",
-    });
+  if (!foundChat) {
+    return res.status(404).json({ message: "Chat not found", success: false });
   }
 
-  const messages = await messageModel.find({ chat: chatId });
+  const messages = await messageModel.find({ chat: chatId }).sort({ createdAt: 1 });
 
   res.status(200).json({
     message: "Messages retrieved successfully",
     success: true,
-    messages
+    messages,
   });
 }
 
 export async function DeleteChat(req, res) {
   const { chatId } = req.params;
 
-  const chat = await chatModel.findOneAndDelete({
-    _id: chatId,
-    userId: req.user.id,
-  });
+  const deletedChat = await chatModel.findOneAndDelete({ _id: chatId, user: req.user.id });
 
-  if (!chat) {
-    return res.status(404).json({
-      message: "Chat not found",
-      success: false,
-      err: "Chat not found",
-    });
+  if (!deletedChat) {
+    return res.status(404).json({ message: "Chat not found", success: false });
   }
 
   await messageModel.deleteMany({ chat: chatId });
 
-  res.status(200).json({
-    message: "Chat deleted successfully",
-    success: true,
-  });
+  res.status(200).json({ message: "Chat deleted successfully", success: true });
 }
-

@@ -1,55 +1,85 @@
 import userModel from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../services/mail.service.js";
+import chatModel from "../models/chat.model.js";
 
 export async function register(req, res) {
-  const { username, email, password } = req.body;
+  try {
+    const { username, email, password } = req.body;
 
-  const isUserAlreadyExist = await userModel.findOne({
-    $or: [{ email }, { username }],
-  });
+    const isUserAlreadyExist = await userModel.findOne({
+      $or: [{ email }, { username }],
+    });
 
-  if (isUserAlreadyExist) {
-    return res.status(400).json({
-      message: "User with this email or username already exist",
+    if (isUserAlreadyExist) {
+      return res.status(400).json({
+        message: "User with this email or username already exist",
+        success: false,
+        err: "User already exists",
+      });
+    }
+
+    // Schema ka pre('save') hook is password ko auto-hash kar dega
+    const user = await userModel.create({
+      username,
+      email,
+      password,
+    });
+
+    // 1-Day Expiry set kar di
+    const emailVerificationToken = jwt.sign(
+      { email: user.email },
+      process.env.JWT_KEY,
+      { expiresIn: "1d" }
+    );
+
+    // Safe Email Sending block
+    try {
+      await sendEmail({
+        to: email,
+        subject: "Welcome to Perplexity",
+        html: `
+            <p>Hi ${username},</p>
+            <p>Thank you for registering at <strong>Perplexity</strong>. We are excited to have you on board!</p>
+            <p>Please verify your email address by clicking the link below:</p>
+            <a href="http://localhost:3000/api/verify-email?token=${emailVerificationToken}">Verify Email</a>
+            <p>If you did not create an account, please ignore this email.</p>
+            <p>Best regards,<br>The Perplexity Team</p>
+            `,
+      });
+    } catch (emailErr) {
+      console.error("EMAIL SENDING ERROR:", emailErr);
+      // Even if email fails, respond gracefully instead of crashing/hanging
+      return res.status(201).json({
+        message: "User registered, but verification email failed to send.",
+        success: true,
+        emailSent: false,
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+        },
+      });
+    }
+
+    return res.status(201).json({
+      message: "User registered successfully",
+      success: true,
+      emailSent: true,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+      },
+    });
+  } catch (err) {
+    console.error("REGISTER API ERROR:", err);
+    return res.status(500).json({
+      message: "Server error during registration",
       success: false,
-      err: "User already exists",
+      err: err.message,
     });
   }
-
-  const user = await userModel.create({
-    username,
-    email,
-    password,
-  });
-
-  const emailVerificationToken = jwt.sign(
-    { email: user.email },
-    process.env.JWT_KEY,
-  );
-
-  await sendEmail({
-    to: email,
-    subject: "Welcome to Perplexity",
-    html: `
-        <p>Hi ${username},</p>
-        <p>Thank you for registering at <strong>Perplexity</strong>. We are excited to have you on board!</p>
-        <p>Please verify your email address by clicking the link below:</p>
-        <a href="http://localhost:3000/api/verify-email?token=${emailVerificationToken}">Verify Email</a>
-        <p>If you did not create an account, please ignore this email.</p>
-        <p>Best regards,<br>The Perplexity Team</p>
-        `,
-  });
-
-  res.status(201).json({
-    message: "User registered successfully",
-    success: true,
-    user: {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-    },
-  });
 }
 
 export async function login(req, res) {
@@ -91,13 +121,12 @@ export async function login(req, res) {
     { expiresIn: "7d" },
   );
 
- res.cookie("token", token, {
-  httpOnly: true,
-  secure: true,    
- sameSite: "lax",
-  maxAge: 24 * 60 * 60 * 1000 
-
+const newChat = await chatModel.create({
+  user: user._id,
+  title: "New Chat"
 });
+
+ res.cookie("token", token)
 
   res.status(200).json({
     message: "Login successfully",
