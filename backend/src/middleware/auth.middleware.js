@@ -12,10 +12,6 @@ export async function authUser(req, res, next) {
     token = req.cookies.token;
   }
 
-  // Debugging logs:
-  console.log("RECEIVED TOKEN:", token);
-  console.log("JWT SECRET:", process.env.JWT_KEY);
-
   if (!token) {
     return res.status(401).json({
       message: "Token not provided",
@@ -29,7 +25,7 @@ export async function authUser(req, res, next) {
     const cleanToken = token.replace(/^"(.*)"$/, "$1").trim();
 
     const verify = jwt.verify(cleanToken, process.env.JWT_KEY);
-    console.log("VERIFIED USER:", verify);
+
     req.user = verify;
     next();
   } catch (err) {

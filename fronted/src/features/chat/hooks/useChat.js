@@ -25,12 +25,7 @@ export const useChat = () => {
       const { chat, userMessage, aiMessage } = data;
 
       if (!chatId) {
-        dispatch(
-          createNewChat({
-            chatId: chat._id,
-            title: chat.title,
-          }),
-        );
+        dispatch(createNewChat({ chat }));
       }
       dispatch(setCurrentChatId(chat._id));
 

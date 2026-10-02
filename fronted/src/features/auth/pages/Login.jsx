@@ -6,39 +6,43 @@ import { Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const Login = () => {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const { handleLogin } = useAuth();
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-const user = useSelector((state) => state.auth.user);
-const loading = useSelector((state) => state.auth.loading);
+  const user = useSelector((state) => state.auth.user);
+  const loading = useSelector((state) => state.auth.loading);
 
+  async function handleSubmit(e) {
+    e.preventDefault();
 
- async function handleSubmit(e) {
-  e.preventDefault();
+    const payload = {
+      email,
+      password,
+    };
 
-  const payload = {
-    email,
-    password,
-  };
+    const success = await handleLogin(payload);
 
-  const success = await handleLogin(payload);
-
-  if (success) {
-    navigate("/");
+    if (success) {
+      navigate("/");
+    }
   }
-}
 
-if (loading) {
-  return <div>Loading...</div>;
-}
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-900">
+        <h1 className="animate-pulse font-poppins text-2xl font-medium tracking-widest text-white">
+          Loading...
+        </h1>
+      </div>
+    );
+  }
 
-if (user) {
-  return <Navigate to="/" replace />;
-}
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#0C0E0F] px-4 py-12 text-[#FFFFFF] sm:px-6">
